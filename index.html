@@ -7,15 +7,10 @@
 
   <style>
     body {
-    background-image: url('https://th.bing.com/th/id/R.f78d333dcef9e1a157c6bef3c1952060?rik=n3xPymagFgxHuw&riu=http%3a%2f%2fwallpapercave.com%2fwp%2fwEQZIPz.jpg&ehk=bjFod4O7lKpb8AHS3%2f5oVpNd28e6n64g6bu5jBT%2frSM%3d&risl=&pid=ImgRaw&r=0');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    margin: 0;
-    font-family: Arial black, sans-serif;
-    color: #000
-    }
-    body {
+      background-image: url('https://th.bing.com/th/id/R.f78d333dcef9e1a157c6bef3c1952060?rik=n3xPymagFgxHuw&riu=http%3a%2f%2fwallpapercave.com%2fwp%2fwEQZIPz.jpg&ehk=bjFod4O7lKpb8AHS3%2f5oVpNd28e6n64g6bu5jBT%2frSM%3d&risl=&pid=ImgRaw&r=0');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #f3f3f3;
@@ -31,8 +26,9 @@
 
     .product-container {
       display: flex;
-      flex-direction: column auto;  /* Stack cards vertically */
-      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
       padding: 20px;
     }
 
@@ -41,10 +37,11 @@
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       padding: 15px;
-      margin-bottom: 20px;
-      width: 90%;
-      max-width: 400px;  /* Limits width on large screens */
+      margin: 10px;
+      width: 100%;
+      max-width: 300px;
       transition: transform 0.2s ease;
+      box-sizing: border-box;
     }
 
     .product:hover {
@@ -86,6 +83,7 @@
       width: 90%;
       max-width: 600px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-sizing: border-box;
     }
 
     .cart-item {
@@ -106,6 +104,29 @@
     #discount-msg {
       color: green;
       margin-top: 10px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .product-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .product {
+        width: 90%;
+        max-width: 100%;
+      }
+
+      .cart {
+        width: 95%;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .product {
+        max-width: 45%;
+      }
     }
   </style>
 </head>
@@ -150,8 +171,8 @@
       <img src="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQmAKrE3HxLvPfKueNBdV1cez4EestknNZY7t8qP0KTEVWncrD_Fb82PJyn34Zss0Bd26zUto7oXUPhuEMRAXK3G05rVgsXw5vn86MqOINom1OnYvNGV0gqQbA-tJw6SLn_FUT2PHY&usqp=CAc"
           alt="Omega 3"
           style="width: 50px; height:100px;">
-      <p>Price: Rs. 699</p>   
-      <input type="number" min="1" value="1" class="qty">
+        <p>Price: Rs. 699</p>
+      <input type="number" min="0" value="1" class="qty">
       <button class="add-to-cart" data-product="Omega 3" data-price="699">Add to Cart</button>
     </div>
   </div>
@@ -164,70 +185,67 @@
   </div>
 
   <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const cartItemsList = document.getElementById('cart-items');
+      const totalPriceElement = document.getElementById('total-price');
+      const discountMessage = document.getElementById('discount-msg');
+      let cart = [];
 
-  document.addEventListener("DOMContentLoaded", function () {
-    const cartItemsList = document.getElementById('cart-items');
-    const totalPriceElement = document.getElementById('total-price');
-    const discountMessage = document.getElementById('discount-msg');
-    let cart = [];
-
-    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-    addToCartButtons.forEach((button, index) => {
-      button.addEventListener('click', function () {
-        const productName = this.getAttribute('data-product');
-        const productPrice = parseFloat(this.getAttribute('data-price'));
-        const quantityInput = document.querySelectorAll('.qty')[index];
-        const quantity = parseInt(quantityInput.value);
-
-        if (quantity < 1) return;
-
-        const existingItem = cart.find(item => item.name === productName);
-        if (existingItem) {
-          existingItem.quantity += quantity;
-        } else {
-          cart.push({ name: productName, price: productPrice, quantity });
-        }
-
-        updateCartUI();
-      });
-    });
-
-    function updateCartUI() {
-      cartItemsList.innerHTML = '';
-
-      cart.forEach((item, index) => {
-        const listItem = document.createElement('li');
-        listItem.classList.add('cart-item');
-        listItem.innerHTML = `
-          <span>${item.name} x ${item.quantity} - Rs.${(item.price * item.quantity)}</span>
-          <button class="remove-btn" data-index="${index}">Remove</button>
-        `;
-        cartItemsList.appendChild(listItem);
-      });
-
-      // Re-attach remove button listeners
-      document.querySelectorAll('.remove-btn').forEach(button => {
+      const addToCartButtons = document.querySelectorAll('.add-to-cart');
+      addToCartButtons.forEach((button, index) => {
         button.addEventListener('click', function () {
-          const index = this.getAttribute('data-index');
-          cart.splice(index, 1);
+          const productName = this.getAttribute('data-product');
+          const productPrice = parseFloat(this.getAttribute('data-price'));
+          const quantityInput = document.querySelectorAll('.qty')[index];
+          const quantity = parseInt(quantityInput.value);
+
+          if (quantity < 1) return;
+
+          const existingItem = cart.find(item => item.name === productName);
+          if (existingItem) {
+            existingItem.quantity += quantity;
+          } else {
+            cart.push({ name: productName, price: productPrice, quantity });
+          }
+
           updateCartUI();
         });
       });
 
-      // Calculate total and apply discount
-      let totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-      let discount = 0;
-      if (totalPrice > 2000) {
-        discount = totalPrice * 0.10;
-        totalPrice -= discount;
-        discountMessage.textContent = `Congratulations! A 10% discount of Rs.${discount.toFixed(2)} has been applied.`;
-      } else {
-        discountMessage.textContent = '';
-      }
+      function updateCartUI() {
+        cartItemsList.innerHTML = '';
 
-      totalPriceElement.textContent = totalPrice.toFixed(2);
-    }
-  });
-</script>
+        cart.forEach((item, index) => {
+          const listItem = document.createElement('li');
+          listItem.classList.add('cart-item');
+          listItem.innerHTML = `
+            <span>${item.name} x ${item.quantity} - Rs.${(item.price * item.quantity)}</span>
+            <button class="remove-btn" data-index="${index}">Remove</button>
+          `;
+          cartItemsList.appendChild(listItem);
+        });
+
+        document.querySelectorAll('.remove-btn').forEach(button => {
+          button.addEventListener('click', function () {
+            const index = this.getAttribute('data-index');
+            cart.splice(index, 1);
+            updateCartUI();
+          });
+        });
+
+        let totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+        let discount = 0;
+        if (totalPrice > 2000) {
+          discount = totalPrice * 0.10;
+          totalPrice -= discount;
+          discountMessage.textContent = `Congratulations! A 10% discount of Rs.${discount.toFixed(2)} has been applied.`;
+        } else {
+          discountMessage.textContent = '';
+        }
+
+        totalPriceElement.textContent = totalPrice.toFixed(2);
+      }
+    });
+  </script>
 </body>
 </html>
